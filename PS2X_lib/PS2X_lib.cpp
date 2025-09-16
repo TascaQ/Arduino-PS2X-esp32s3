@@ -181,7 +181,7 @@ byte PS2X::config_gamepad(uint8_t clk, uint8_t cmd, uint8_t att, uint8_t dat, bo
   _dat_mask = digitalPinToBitMask(dat);
   _dat_ireg = portInputRegister(digitalPinToPort(dat));
 #else
-#ifdef ESP8266
+#if defined(ESP8266) || defined(ESP32)
   _clk_pin = clk;
   _cmd_pin = cmd;
   _att_pin = att;
@@ -211,7 +211,7 @@ byte PS2X::config_gamepad(uint8_t clk, uint8_t cmd, uint8_t att, uint8_t dat, bo
   pinMode(clk, OUTPUT); //configure ports
   pinMode(att, OUTPUT);
   pinMode(cmd, OUTPUT);
-#ifdef ESP8266
+#if defined(ESP8266) || defined(ESP32)
   pinMode(dat, INPUT_PULLUP); // enable pull-up
 #else
   pinMode(dat, INPUT);
@@ -239,56 +239,57 @@ byte PS2X::config_gamepad(uint8_t clk, uint8_t cmd, uint8_t att, uint8_t dat, bo
     return 1; //return error code 1
   }
 
-  //try setting mode, increasing delays if need be.
-  read_delay = 1;
+    Serial.println("skipping setting mode. Now is for tweaking. You have to modify PS2X_lib.cpp to use this correctly.");
+//   //try setting mode, increasing delays if need be.
+//   read_delay = 1;
 
-  for(int y = 0; y <= 10; y++) {
-    sendCommandString(enter_config, sizeof(enter_config)); //start config run
+//   for(int y = 0; y <= 10; y++) {
+//     sendCommandString(enter_config, sizeof(enter_config)); //start config run
 
-    //read type
-    delayMicroseconds(CTRL_BYTE_DELAY);
+//     //read type
+//     delayMicroseconds(CTRL_BYTE_DELAY);
 
-    CMD_SET();
-    CLK_SET();
-    ATT_CLR(); // low enable joystick
+//     CMD_SET();
+//     CLK_SET();
+//     ATT_CLR(); // low enable joystick
 
-    delayMicroseconds(CTRL_BYTE_DELAY);
+//     delayMicroseconds(CTRL_BYTE_DELAY);
 
-    for (int i = 0; i<9; i++) {
-      temp[i] = _gamepad_shiftinout(type_read[i]);
-    }
+//     for (int i = 0; i<9; i++) {
+//       temp[i] = _gamepad_shiftinout(type_read[i]);
+//     }
 
-    ATT_SET(); // HI disable joystick
+//     ATT_SET(); // HI disable joystick
 
-    controller_type = temp[3];
+//     controller_type = temp[3];
 
-    sendCommandString(set_mode, sizeof(set_mode));
-    if(rumble){ sendCommandString(enable_rumble, sizeof(enable_rumble)); en_Rumble = true; }
-    if(pressures){ sendCommandString(set_bytes_large, sizeof(set_bytes_large)); en_Pressures = true; }
-    sendCommandString(exit_config, sizeof(exit_config));
+//     sendCommandString(set_mode, sizeof(set_mode));
+//     if(rumble){ sendCommandString(enable_rumble, sizeof(enable_rumble)); en_Rumble = true; }
+//     if(pressures){ sendCommandString(set_bytes_large, sizeof(set_bytes_large)); en_Pressures = true; }
+//     sendCommandString(exit_config, sizeof(exit_config));
 
-    read_gamepad();
+//     read_gamepad();
 
-    if(pressures){
-      if(PS2data[1] == 0x79)
-        break;
-      if(PS2data[1] == 0x73)
-        return 3;
-    }
+//     if(pressures){
+//       if(PS2data[1] == 0x79)
+//         break;
+//       if(PS2data[1] == 0x73)
+//         return 3;
+//     }
 
-    if(PS2data[1] == 0x73)
-      break;
+//     if(PS2data[1] == 0x73)
+//       break;
 
-    if(y == 10){
-#ifdef PS2X_DEBUG
-      Serial.println("Controller not accepting commands");
-      Serial.print("mode still set at");
-      Serial.println(PS2data[1], HEX);
-#endif
-      return 2; //exit function with error
-    }
-    read_delay += 1; //add 1ms to read_delay
-  }
+//     if(y == 10){
+// #ifdef PS2X_DEBUG
+//       Serial.println("Controller not accepting commands");
+//       Serial.print("mode still set at");
+//       Serial.println(PS2data[1], HEX);
+// #endif
+//       return 2; //exit function with error
+//     }
+//     read_delay += 1; //add 1ms to read_delay
+//   }
   return 0; //no error if here
 }
 
@@ -449,7 +450,7 @@ inline bool PS2X::DAT_CHK(void) {
 }
 
 #else
-#ifdef ESP8266
+#if defined(ESP8266) || defined(ESP32)
 // Let's just use digitalWrite() on ESP8266.
 inline void  PS2X::CLK_SET(void) {
   digitalWrite(_clk_pin, HIGH);
