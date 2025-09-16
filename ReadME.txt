@@ -1,4 +1,8 @@
 /******************************************************************
+Now support esp32/esp32s3.
+The code wasn't written by me, but I cannot find the source. I simply do a quick check and the codes works fine with esp32s3 chip.
+
+/******************************************************************
 *  Super amazing PS2 controller Arduino Library v1.8
 *		details and example sketch: 
 *			http://www.billporter.info/?p=240
